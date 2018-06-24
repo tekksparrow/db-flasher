@@ -1,5 +1,4 @@
 package dbf;
-import java.io.*;
 import java.lang.StringBuffer;
 import java.util.ArrayList;
 
@@ -8,6 +7,16 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.json.simple.parser.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.FileReader;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.io.*;
 
 
 public class JsonNavigator {
@@ -24,14 +33,28 @@ public class JsonNavigator {
 			jFile = (JSONArray) jParse.parse(new FileReader(pathString));
 
 		}catch(FileNotFoundException e) {
-
-		}catch(IOException e) {
-
-		}catch(ParseException e) {
-
-		}catch(Exception e) {
+			System.out.println("General Exception");
 			System.out.println(e.getMessage());
 			System.out.println(e.getStackTrace());
+			e.printStackTrace();
+
+		}catch(IOException e) {
+			System.out.println("General Exception");
+			System.out.println(e.getMessage());
+			System.out.println(e.getStackTrace());
+			e.printStackTrace();
+
+		}catch(ParseException e) {
+			System.out.println("General Exception");
+			System.out.println(e.getMessage());
+			System.out.println(e.getStackTrace());
+			e.printStackTrace();
+
+		}catch(Exception e) {
+			System.out.println("General Exception");
+			System.out.println(e.getMessage());
+			System.out.println(e.getStackTrace());
+			e.printStackTrace();
 		}
 
 	}
