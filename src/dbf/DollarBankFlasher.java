@@ -59,6 +59,8 @@ public class DollarBankFlasher {
 		int prevFileNum = 0;
 		int currFileNum = 0;
 
+		boolean firstRun = false;
+
 		try {
 			// Get JSONArray
 			String url = cfg.getProperty("mInputJson");
@@ -70,12 +72,23 @@ public class DollarBankFlasher {
 			StringBuilder sb = new StringBuilder();
 			String counterloc = cfg.getProperty("mInputCounterLoc");
 
+			// Extract counter value
 			File cntFile = new File(counterloc);
 			reader1 = new BufferedReader(new FileReader(cntFile));
 			String fileNumber = reader1.readLine();
-			prevFileNum += Integer.parseInt(fileNumber);
-			currFileNum += prevFileNum + 1;
+			
+			// Determine if this is first run
+			if (Integer.valueOf(fileNumber) == -1) {
+				System.out.println("First run, using current as previous.");
+				firstRun = true;
+				prevFileNum = 0;
+				currFileNum = 0;
+			} else {
+				prevFileNum += Integer.parseInt(fileNumber);
+				currFileNum += prevFileNum + 1;
+			}
 
+			// Create current file
 			sb.append("../res/dbJobs.");			
 			sb.append(String.format("%03d", currFileNum)).append(".json");
 			
@@ -83,6 +96,7 @@ public class DollarBankFlasher {
 			f.write(json.toString());
 			f.close();
 
+			// Update counter
 			FileWriter cntWrite = new FileWriter(counterloc);
 			cntWrite.write(Integer.toString(currFileNum));
 			cntWrite.close();
@@ -100,13 +114,20 @@ public class DollarBankFlasher {
 			e.printStackTrace();
 		}
 
-		System.out.println(Integer.toString(currFileNum));
-
 		StringBuilder currJobFile = new StringBuilder("../res/dbJobs.");
 		currJobFile.append(String.format("%03d", currFileNum)).append(".json");
 
 		StringBuilder prevJobFile = new StringBuilder("../res/dbJobs.");
-		prevJobFile.append(String.format("%03d", prevFileNum)).append(".json");
+		if (firstRun) {
+			prevJobFile = currJobFile;
+		} else {
+			prevJobFile.append(String.format("%03d", prevFileNum)).append(".json");
+		}
+
+		System.out.println("current");
+		System.out.println(currFileNum);
+		System.out.println("previous");
+		System.out.println(prevFileNum);
 
 		ArrayList<String> jobFiles = new ArrayList<String>();
 		jobFiles.add(currJobFile.toString());
@@ -122,6 +143,8 @@ public class DollarBankFlasher {
 
 
 		for (int i = 0; i < jobFiles.size(); i++) {
+
+			System.out.println("going " + i);
 
 			JsonNavigator jsonReader = new JsonNavigator(jobFiles.get(i));
 
