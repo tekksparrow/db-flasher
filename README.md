@@ -11,8 +11,14 @@ This project is under development, after the first version is made available thi
 This project is under development, after the first version is made available this section will be completed.
 
 ## Versions
-- Version 1 : Program will run from terminal comand.
+- Version 1 : YOLO coding - get program working. Proof of concept. Program will run from terminal command.
 
-- Version 2 : Program will implment a database to move away from keeping data on files.
+- Version 2 : Reorganize program, modularize into proper classes. Program will run from terminal command.
+  - V 2.1   : (Tentative) create one master file holding all data using delimiters
 
-- Version 3 : Program will make use of a Java Web App Framework and run automatically via configuration files.
+- Version 3 : Program will implment a database to move away from keeping data on individual files.
+
+- Version 4 : (Approach TBA) Automate running (cloud base? home server?)
+  - V 4.1   : Run manually via mobile app.
+
+- Version 5 : (??? learning curve) Rework program, making use of Java Web App Framework.
