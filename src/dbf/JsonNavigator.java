@@ -6,23 +6,19 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.json.simple.parser.*;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.FileReader;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.io.*;
 
 
 public class JsonNavigator {
 
-	public JSONArray   jFile;
-	public JSONObject  jObject;
+	public JSONArray    	 jFile;
+	public JSONObject   	 jObject;
+	public File         	 keywordFile;  
+	public ArrayList<String> jobTitleKeys;
+	
 
 	public JsonNavigator(String pathString) {
 
@@ -30,6 +26,7 @@ public class JsonNavigator {
 
 		try {
 
+			System.out.println("path string " + pathString);
 			jFile = (JSONArray) jParse.parse(new FileReader(pathString));
 
 		}catch(FileNotFoundException e) {
@@ -75,6 +72,35 @@ public class JsonNavigator {
 
 		return sb.toString();
 	}
+	
+	public void toStringJob(String id) {
+
+		for (int i = 0; i < this.jFile.size(); i++) {
+
+			JSONObject jobby = (JSONObject) jFile.get(i);
+			String guid = jobby.get("guid").toString();
+			if (guid.equalsIgnoreCase(id)) {
+				System.out.println(jobby.get("title").toString());
+			}
+			
+		}
+
+	}
+	
+	public JSONObject getObject(int idx) {
+
+		JSONObject jobby = (JSONObject) jFile.get(idx);
+		return jobby;
+
+	}
+	
+	public String getElement(String element) {
+
+		String result = null;
+		JSONObject jobby = (JSONObject) jFile.get(0);
+		result = jobby.get(element).toString();
+		return result;
+	}
 
 	public void loadIds(ArrayList<String> listToLoad) {
 
@@ -86,4 +112,51 @@ public class JsonNavigator {
 		}
 
 	}
+	
+	
+	public ArrayList<String> initPostData(File keywordFile, ArrayList<String> jobTitleKeys) {
+		ArrayList<String> result = null;
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(keywordFile))) {
+		    String line;
+		    while ((line = br.readLine()) != null) {
+		       jobTitleKeys.add(line.trim());
+		    }
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		for (String x : jobTitleKeys) {
+			System.out.println(x);
+		}
+		
+		return result;
+	}
+	
+	public String postGenerator(ArrayList<String> listToLoad) {
+		String result = null;
+		
+//		JSONObject jobby = (JSONObject) jFile.get(i);
+//		String guid = jobby.get("guid").toString();
+//		listToLoad.add(guid);
+		
+		return result;
+	}
+	
+	public boolean contains(String target) {
+		
+		for (int i = 0; i < this.jFile.size(); i++) {
+			JSONObject jobEntry = (JSONObject) jFile.get(i);
+
+			if (jFile.get(i).toString().equals(target)) {
+				System.out.println(jFile.get(i).toString());
+				return true;
+			}
+					
+		}
+		
+		return false;
+	}
+	
 }
