@@ -52,7 +52,7 @@ public class DollarBankFlasher {
 	
 	public static JSONArray readJsonFromLocal(String path) throws IOException, ParseException{
 
-		File initJSON = new File("ntrack/testInput.json");
+		File initJSON = new File("./res/test-input.json");
 		InputStream is = new FileInputStream(initJSON);
 		try {
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
@@ -67,7 +67,9 @@ public class DollarBankFlasher {
 
 	public static void main(String[] args) {
 
-		Config cfg = new Config();
+		System.out.println("TEST RUNS PROD ???");
+
+		// Config cfg = new Config();
 		BufferedReader reader1 = null;
 
 		int prevFileNum = 0;
@@ -91,12 +93,16 @@ public class DollarBankFlasher {
 			String runMode = p.getProperty("runMode");
 			
 			JSONArray json = null;
+
+			System.out.println("++++++++" + p.getProperty("testFileP"));
 			
 			switch (runMode) {
-				case "Offline": json = readJsonFromLocal(p.getProperty("testFileP"));
+				case "Offline": 
+							
+							json = readJsonFromLocal(p.getProperty("testFileP"));
 			                break;
 			                
-				case "Online": json = readJsonFromLocal(p.getProperty("inputURL"));
+				case "Online": json = readJsonFromUrl(p.getProperty("inputURL"));
             				break;			
 			}
 			
@@ -129,23 +135,32 @@ public class DollarBankFlasher {
 			System.out.println(fileNumber);
 			
 			// Determine if this is first run
-			if (Integer.valueOf(fileNumber) == -1) {
+			if (Integer.valueOf(fileNumber) > -1) {
+				prevFileNum += Integer.parseInt(fileNumber);
+				currFileNum += prevFileNum + 1;
+			} else {
 				System.out.println("First run, using current as previous.");
 				firstRun = true;
 				prevFileNum = 0;
 				currFileNum = 0;
-			} else {
-				prevFileNum += Integer.parseInt(fileNumber);
-				currFileNum += prevFileNum + 1;
 			}
 
+// *********************************************************************//
+//																		//
+//	CREAT THE DBJOBS## CURRENT FILE 						 			//
+//																		//
+// *********************************************************************//
+
 			// Create current file
+			System.out.println ("firstRun=" + firstRun);
 			sb.append("./res/dbJobs.");			
 			sb.append(String.format("%03d", currFileNum)).append(".json");
 			
 			FileWriter f = new FileWriter(sb.toString());
 			f.write(json.toString());
 			f.close();
+			System.out.println ("curr file result" + sb.toString());
+
 
 			// Update counter
 			FileWriter cntWrite = new FileWriter(counterloc);
@@ -206,21 +221,22 @@ public class DollarBankFlasher {
 						 break;
 				case 1:	 jsonReader.loadIds(priIdList);
 						 compList = priIdList;
-						 
 						 break;
 				default: System.out.println("===========Error===========");
 			}
-
-			// for (String idNum : curIdList) {
-			// 	System.out.print(idNum + "\n");
-			// }
 		}
 
-		// Are the json job files the same?
+// *********************************************************************//
+//																		//
+//	ARE THE JSON FILES THE SAME ????									//
+//																		//
+// *********************************************************************//
 		if (compList.isEmpty()) {
 			System.out.println("comp is empty before check");
 		}
-		compList.removeAll(curIdList);
+		if (!firstRun) {
+			compList.removeAll(curIdList);
+		}
 		if (compList.isEmpty()) {
 			System.out.println("Same");
 		} else {
@@ -229,12 +245,25 @@ public class DollarBankFlasher {
 			JsonNavigator jobReader = new JsonNavigator(jobFiles.get(0));
 			JsonNavigator jobReader1 = new JsonNavigator(jobFiles.get(1));
 			
+// *********************************************************************//
+//																		//
+//	FILES ARE DIFFERENT, PRINT CONTENTS									//
+//																		//
+// *********************************************************************//			
+			System.out.println("CURRENT");
+			System.out.println(jobFiles.get(0));
 			System.out.println(jobReader.toString());
 			System.out.println("-------------------------------------------------");
+			System.out.println("PREVIOUS");
 			System.out.println(jobReader1.toString());
 			System.out.println(jobReader1.jFile.size());
 			
 			
+// *********************************************************************//
+//																		//
+//	READ FILE CONTAINING PAST JOB GUIDS									//
+//																		//
+// *********************************************************************//			
 			FileWriter fw = null;
 			File cp = null;
 			try {
@@ -242,6 +271,13 @@ public class DollarBankFlasher {
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
+
+// *********************************************************************//
+//																		//
+//	FOR EACH GUID IN OUR COMPLIST (DIFFERENCE BETWEEN CURRENT 			//
+//  RUN FILE AND PREVIOUS RUN FILE) ADD THIS TO THE PAST JOBS FILE/LIST //
+//																		//
+// *********************************************************************//
 			
 			for (String newGuid : compList) {
 				//TODO load a list of seen jobs here so we can use inspect instead of more for loops
@@ -261,17 +297,24 @@ public class DollarBankFlasher {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+
+// *********************************************************************//
+//																		//
+//	JOBREADER1 IS FULL OF JOB POSTS. NEED TO EXTRACT THE TECH JOBS 		//
+// 	AND BUILD POSTS FOR THEM.											//
+//																		//
+// *********************************************************************//			
 				
 				// Get info
 				boolean techJobMatch = false;
 				
-				System.out.println("The size is " + jobReader1.jFile.size());
+				System.out.println("The size is " + jobReader.jFile.size());
 				
-				for (int i = 0; i < jobReader1.jFile.size(); i++) {
+				for (int i = 0; i < jobReader.jFile.size(); i++) {
 					
 					System.out.println(i + "-");
 					
-					JSONObject jobObj = jobReader1.getObject(i);
+					JSONObject jobObj = jobReader.getObject(i);
 					
 					if (techJobMatch) {
 						techJobMatch = false;
@@ -301,7 +344,10 @@ public class DollarBankFlasher {
 							if (keywords.contains(s.toUpperCase())) {
 								System.out.println("word Match");
 								System.out.println(s);
+								System.out.println("JOB TITLE");
+								System.out.println(jobObj.get("title").toString());
 								System.out.println(jobObj.toString());
+								
 								techJobMatch = true;
 								
 								cpw.append("#\n");
@@ -311,18 +357,22 @@ public class DollarBankFlasher {
 								cpw.append(jobObj.get("state").toString() + "\n");
 								cpw.append(jobObj.get("city").toString() + "\n");
 								cpw.close();
+// *********************************************************************//
+//																		//
+//	POST CREATION SHOULD BE MODULARIZED; GREETING/JOB/CLOSER	 		//
+//																		//
+// *********************************************************************//		
+								npw.append("#\n");
+								npw.append("Dollar Bank IT Employment Opportunity!!!\n");
+								npw.append(jobObj.get("title").toString() + "\n");
+								npw.append(jobObj.get("state").toString() + ", " + 
+										jobObj.get("city").toString() + "\n");
+								npw.append(jobObj.get("url").toString() + "\n\n");
+								npw.append("This post was generated automatically by a db-flasher. The code is available in my github repository under the username tekksparrow.\n");
+								npw.close();
 								
 							}
 						}
-						
-						npw.append("#\n");
-						npw.append("Dollar Bank IT Employment Availability!!!\n");
-						npw.append(jobObj.get("title").toString() + "\n");
-						npw.append(jobObj.get("state").toString() + ", " + 
-								jobObj.get("city").toString() + "\n");
-						npw.append(jobObj.get("url").toString() + "\n\n");
-						npw.append("This post was generated automatically by a db-flasher. The code is available on github. <link-github>");
-						npw.close();
 						
 					} catch (IOException e) {
 						e.printStackTrace();

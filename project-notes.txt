@@ -3,3 +3,7 @@ because you still stink at java here are some notes on how to compile and get yo
 javac -cp ../lib/json-simple-1.1.1.jar -d . ../src/dbf/JsonNavigator.java ../src/dbf/DollarBankFlasher.java
 
 java -cp .:../lib/json-simple-1.1.1.jar dbf.DollarBankFlasher
+
+online json address as of july 2018
+https://dollarbankcareers.jobs/feed/json
+
